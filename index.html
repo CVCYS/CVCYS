@@ -77,7 +77,6 @@
 
   <h1>Filtrar Datos del Parque Automotor</h1>
 
-  <!-- Filtros -->
   <div class="filters-container">
     <div>
       <label for="placa">Placa:</label>
@@ -85,7 +84,6 @@
     </div>
   </div>
 
-  <!-- Tabla para mostrar los datos -->
   <table id="tablaDatos">
     <thead>
       <tr>
@@ -98,72 +96,65 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Aquí se llenarán los datos -->
     </tbody>
   </table>
 
   <script>
-    const API_KEY = 'AIzaSyB1vEZso7MH_k6m_INS-qnrx9U_KCdUnAs'; // Tu API Key
-    const SHEET_ID = '12RKBs1wA84rybM9Kr9b4PUDk65ykrVuNiwvbXVTFoV4'; // Tu ID de Hoja
-    const RANGE = 'A1:E'; // El rango de celdas a leer (ajusta según tus necesidades)
+    const API_KEY = 'AIzaSyB1vEZso7MH_k6m_INS-qnrx9U_KCdUnAs'; 
+    const SHEET_ID = '12RKBs1wA84rybM9Kr9b4PUDk65ykrVuNiwvbXVTFoV4'; 
+    const RANGE = 'A1:E'; 
 
-    let datosGlobales = []; // Almacenamos los datos globalmente
-    let datosFiltrados = []; // Aquí se almacenarán los datos filtrados
+    let datosGlobales = []; 
+    let datosFiltrados = []; 
 
-    // Función para cargar los datos desde Google Sheets
     async function cargarDatos() {
       const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
       const respuesta = await fetch(url);
       const datos = await respuesta.json();
-      const datosFiltrados = datos.values.slice(1); // Ignorar la primera fila (cabeceras)
+      const datosFiltrados = datos.values.slice(1); 
 
-      datosGlobales = datosFiltrados; // Guardamos los datos globalmente
+      datosGlobales = datosFiltrados; 
       mostrarDatos(datosFiltrados);
     }
 
-    // Función para mostrar los datos en la tabla sin paginación
+
     function mostrarDatos(datos) {
       const tabla = document.getElementById('tablaDatos').getElementsByTagName('tbody')[0];
-      tabla.innerHTML = ''; // Limpiar tabla antes de llenar
+      tabla.innerHTML = ''; 
 
       datos.forEach(fila => {
         const row = tabla.insertRow();
         fila.forEach((celda, index) => {
           const cell = row.insertCell();
           if (index < 5) {
-            cell.textContent = celda; // Solo llenamos las primeras 5 columnas
+            cell.textContent = celda; 
           }
         });
 
-        // Columna de "Ver"
         const verCell = row.insertCell();
         const verBtn = document.createElement('button');
         verBtn.textContent = 'Ver';
         verBtn.classList.add('ver-btn');
-        verBtn.onclick = () => verDetalle(fila[0]); // Llamar a la función para ver los detalles
+        verBtn.onclick = () => verDetalle(fila[0]); 
         verCell.appendChild(verBtn);
       });
     }
-
-    // Función para filtrar los datos
+s
     function filtrarDatos() {
       const filtroPlaca = document.getElementById('placa').value.toLowerCase();
 
-      // Filtrar los datos según el filtro de "Placa"
       datosFiltrados = datosGlobales.filter(fila => {
         const placaCoincide = filtroPlaca === '' || fila[0].toLowerCase().includes(filtroPlaca);
         return placaCoincide;
       });
 
-      mostrarDatos(datosFiltrados); // Muestra los datos filtrados sin paginación
+      mostrarDatos(datosFiltrados);
     }
 
-    // Función para ver los detalles de un vehículo por placa
     function verDetalle(placa) {
       window.location.href = `detalles.html?placa=${placa}`;
     }
 
-    // Cargar los datos al inicio
     cargarDatos();
   </script>
 
