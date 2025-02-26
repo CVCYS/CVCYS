@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Filtrar Datos del Parque Automotor</title>
+  <title>Parque Automotor Escotur</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -71,25 +71,6 @@
     .ver-btn:hover {
       background-color: #45a049;
     }
-
-    .pagination {
-      margin-top: 20px;
-      text-align: center;
-    }
-
-    .pagination button {
-      padding: 8px 16px;
-      margin: 0 5px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .pagination button:hover {
-      background-color: #45a049;
-    }
   </style>
 </head>
 <body>
@@ -121,12 +102,6 @@
     </tbody>
   </table>
 
-  <!-- Paginación -->
-  <div class="pagination">
-    <button id="btnAnterior" onclick="cambiarPagina(-1)">Anterior</button>
-    <button id="btnSiguiente" onclick="cambiarPagina(1)">Siguiente</button>
-  </div>
-
   <script>
     const API_KEY = 'AIzaSyB1vEZso7MH_k6m_INS-qnrx9U_KCdUnAs'; // Tu API Key
     const SHEET_ID = '12RKBs1wA84rybM9Kr9b4PUDk65ykrVuNiwvbXVTFoV4'; // Tu ID de Hoja
@@ -134,8 +109,6 @@
 
     let datosGlobales = []; // Almacenamos los datos globalmente
     let datosFiltrados = []; // Aquí se almacenarán los datos filtrados
-    let paginaActual = 1;
-    const registrosPorPagina = 20;
 
     // Función para cargar los datos desde Google Sheets
     async function cargarDatos() {
@@ -148,19 +121,17 @@
       mostrarDatos(datosFiltrados);
     }
 
-    // Función para mostrar los datos en la tabla
+    // Función para mostrar los datos en la tabla sin paginación
     function mostrarDatos(datos) {
       const tabla = document.getElementById('tablaDatos').getElementsByTagName('tbody')[0];
       tabla.innerHTML = ''; // Limpiar tabla antes de llenar
 
-      const datosPaginados = datos.slice((paginaActual - 1) * registrosPorPagina, paginaActual * registrosPorPagina);
-
-      datosPaginados.forEach(fila => {
+      datos.forEach(fila => {
         const row = tabla.insertRow();
         fila.forEach((celda, index) => {
           const cell = row.insertCell();
           if (index < 5) {
-            cell.textContent = celda; // Solo llenamos las primeras 3 columnas
+            cell.textContent = celda; // Solo llenamos las primeras 5 columnas
           }
         });
 
@@ -172,8 +143,6 @@
         verBtn.onclick = () => verDetalle(fila[0]); // Llamar a la función para ver los detalles
         verCell.appendChild(verBtn);
       });
-
-      actualizarPaginacion(datos.length);
     }
 
     // Función para filtrar los datos
@@ -186,22 +155,7 @@
         return placaCoincide;
       });
 
-      paginaActual = 1; // Resetea la página cuando se filtra
-      mostrarDatos(datosFiltrados); // Muestra los datos filtrados
-    }
-
-    // Función para manejar la paginación
-    function cambiarPagina(direccion) {
-      paginaActual += direccion;
-      if (paginaActual < 1) paginaActual = 1;
-      mostrarDatos(datosFiltrados); // Mostrar los datos de la nueva página
-    }
-
-    // Actualiza los botones de paginación
-    function actualizarPaginacion(totalDatos) {
-      const totalPaginas = Math.ceil(totalDatos / registrosPorPagina);
-      document.getElementById('btnAnterior').disabled = paginaActual <= 1;
-      document.getElementById('btnSiguiente').disabled = paginaActual >= totalPaginas;
+      mostrarDatos(datosFiltrados); // Muestra los datos filtrados sin paginación
     }
 
     // Función para ver los detalles de un vehículo por placa
