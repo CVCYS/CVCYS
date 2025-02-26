@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalles del Vehículo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 60%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+      text-transform: uppercase;
+    }
+
+    td {
+      background-color: #f9f9f9;
+    }
+
+    .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      color: white;
+    }
+
+    .edit-btn {
+      background-color: #f0ad4e;
+    }
+
+    .edit-btn:hover {
+      background-color: #ec971f;
+    }
+
+    .save-btn {
+      background-color: #5bc0de;
+      display: none;
+    }
+
+    .save-btn:hover {
+      background-color: #31b0d5;
+    }
+
+    .back-btn {
+      background-color: #4CAF50;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .back-btn:hover {
+      background-color: #45a049;
+    }
+
+    input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Detalles del Vehículo</h1>
+
+  <table>
+    <tbody id="detallesTabla">
+      <!-- Aquí se insertarán los datos -->
+    </tbody>
+  </table>
+
+  <button id="guardarBtn" class="btn save-btn" onclick="guardarDatos()">Guardar</button>
+  
+  <br><br>
+  <a href="index.html" class="btn back-btn">Volver</a>
+
+  <script>
+    const API_KEY = 'AIzaSyB1vEZso7MH_k6m_INS-qnrx9U_KCdUnAs'; // API Key
+    const SHEET_ID = '12RKBs1wA84rybM9Kr9b4PUDk65ykrVuNiwvbXVTFoV4'; // ID de la hoja
+    const RANGE = 'A1:Z'; // Rango de la hoja con todas las columnas
+
+    let datosOriginales = []; // Almacenará los datos antes de la edición
+    let filaIndex = -1; // Índice de la fila a editar
+
+    // Obtener la placa desde la URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const placaBuscada = urlParams.get('placa');
+
+    // Función para obtener y mostrar los datos
+    async function obtenerDetalles() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+      const respuesta = await fetch(url);
+      const datos = await respuesta.json();
+      const filas = datos.values;
+      const cabeceras = filas[0];
+      const datosVehiculos = filas.slice(1);
+
+      filaIndex = datosVehiculos.findIndex(fila => fila[0] === placaBuscada) + 1;
+
+      if (filaIndex > 0) {
+        datosOriginales = datosVehiculos[filaIndex - 1];
+        mostrarDetalles(cabeceras, datosOriginales);
+      } else {
+        document.getElementById('detallesTabla').innerHTML = `<tr><td colspan="2">No se encontraron datos</td></tr>`;
+      }
+    }
+
+    // Función para mostrar los detalles
+    function mostrarDetalles(cabeceras, fila) {
+      const detallesTabla = document.getElementById('detallesTabla');
+      detallesTabla.innerHTML = '';
+
+      cabeceras.forEach((titulo, index) => {
+        const valor = fila[index] || 'N/A';
+        detallesTabla.innerHTML += `
+          <tr>
+            <th>${titulo}</th>
+            <td><span class="dato">${valor}</span>
+                <input type="text" class="edit-input" value="${valor}" style="display:none;">
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Habilitar edición
+    function habilitarEdicion() {
+      document.querySelectorAll('.dato').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.edit-input').forEach(el => el.style.display = 'block');
+
+      document.getElementById('editarBtn').style.display = 'none';
+      document.getElementById('guardarBtn').style.display = 'inline-block';
+    }
+
+    // Guardar datos editados
+    async function guardarDatos() {
+      const inputs = document.querySelectorAll('.edit-input');
+      const nuevosDatos = Array.from(inputs).map(input => input.value);
+
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/C${filaIndex + 1}:Z${filaIndex + 1}?valueInputOption=RAW&key=${API_KEY}`;
+
+      const body = {
+        range: `C${filaIndex + 1}:Z${filaIndex + 1}`,
+        majorDimension: "ROWS",
+        values: [nuevosDatos]
+      };
+
+      const respuesta = await fetch(url, {
+        method: 'PUT',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+
+      if (respuesta.ok) {
+        alert("Datos actualizados correctamente");
+        location.reload();
+      } else {
+        alert("Error al actualizar los datos");
+      }
+    }
+
+    // Cargar los detalles al inicio
+    obtenerDetalles();
+  </script>
+
+</body>
+</html>
