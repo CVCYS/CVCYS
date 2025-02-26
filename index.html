@@ -131,6 +131,7 @@
           }
         });
 
+        // Columna de "Ver"
         const verCell = row.insertCell();
         const verBtn = document.createElement('button');
         verBtn.textContent = 'Ver';
@@ -139,7 +140,7 @@
         verCell.appendChild(verBtn);
       });
     }
-s
+
     function filtrarDatos() {
       const filtroPlaca = document.getElementById('placa').value.toLowerCase();
 
@@ -148,7 +149,7 @@ s
         return placaCoincide;
       });
 
-      mostrarDatos(datosFiltrados);
+      mostrarDatos(datosFiltrados); 
     }
 
     function verDetalle(placa) {
