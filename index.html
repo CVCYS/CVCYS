@@ -1,0 +1,163 @@
+<!DOCTYPE html> 
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parque Automotor Escotur</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .filters-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .filters-container label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .filters-container input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    td {
+      background-color: #f9f9f9;
+    }
+
+    .ver-btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .ver-btn:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Filtrar Datos del Parque Automotor</h1>
+
+  <div class="filters-container">
+    <div>
+      <label for="placa">Placa:</label>
+      <input type="text" id="placa" placeholder="Filtrar por Placa" onkeyup="filtrarDatos()">
+    </div>
+  </div>
+
+  <table id="tablaDatos">
+    <thead>
+      <tr>
+        <th>PLACA</th>
+        <th>CAPACIDAD</th>
+        <th>MARCA</th>
+        <th>MODELO</th>
+        <th>LÍNEA</th>
+        <th>ACCESO</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <script>
+    const API_KEY = 'AIzaSyB1vEZso7MH_k6m_INS-qnrx9U_KCdUnAs'; 
+    const SHEET_ID = '12RKBs1wA84rybM9Kr9b4PUDk65ykrVuNiwvbXVTFoV4'; 
+    const RANGE = 'A1:E'; 
+
+    let datosGlobales = []; 
+    let datosFiltrados = []; 
+
+    async function cargarDatos() {
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+      const respuesta = await fetch(url);
+      const datos = await respuesta.json();
+      const datosFiltrados = datos.values.slice(1); 
+
+      datosGlobales = datosFiltrados; 
+      mostrarDatos(datosFiltrados);
+    }
+
+
+    function mostrarDatos(datos) {
+      const tabla = document.getElementById('tablaDatos').getElementsByTagName('tbody')[0];
+      tabla.innerHTML = ''; 
+
+      datos.forEach(fila => {
+        const row = tabla.insertRow();
+        fila.forEach((celda, index) => {
+          const cell = row.insertCell();
+          if (index < 5) {
+            cell.textContent = celda; 
+          }
+        });
+
+        // Columna de "Ver"
+        const verCell = row.insertCell();
+        const verBtn = document.createElement('button');
+        verBtn.textContent = 'Ver';
+        verBtn.classList.add('ver-btn');
+        verBtn.onclick = () => verDetalle(fila[0]); 
+        verCell.appendChild(verBtn);
+      });
+    }
+
+    function filtrarDatos() {
+      const filtroPlaca = document.getElementById('placa').value.toLowerCase();
+
+      datosFiltrados = datosGlobales.filter(fila => {
+        const placaCoincide = filtroPlaca === '' || fila[0].toLowerCase().includes(filtroPlaca);
+        return placaCoincide;
+      });
+
+      mostrarDatos(datosFiltrados); 
+    }
+
+    function verDetalle(placa) {
+      window.location.href = `detalles.html?placa=${placa}`;
+    }
+
+    cargarDatos();
+  </script>
+
+</body>
+</html>
